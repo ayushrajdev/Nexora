@@ -1,0 +1,191 @@
+services:
+  # ─────────────────────────────────────
+  #  Infrastructure (Internal to Docker Network)
+  # ─────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    # No external ports exposed — only accessible by containers inside the network
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    # No external ports exposed — only accessible by containers inside the network
+    expose:
+      - "27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ─────────────────────────────────────
+  #  API Gateway (ONLY EXPOSED SERVICE)
+  # ─────────────────────────────────────
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    # ONLY port 3000 is open to the outside world (host machine / frontend)
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=api-gateway
+      - PORT=3000
+      - REDIS_HOST=redis
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - PROFILE_SERVICE_URL=http://profile-service:3002
+      - MATCHING_SERVICE_URL=http://matching-service:3003
+      - CHAT_SERVICE_URL=http://chat-service:3004
+      - PAYMENT_SERVICE_URL=http://payment-service:3005
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ─────────────────────────────────────
+  #  Auth Service (Private / Internal Only)
+  # ─────────────────────────────────────
+  auth-service:
+    build:
+      context: .
+      dockerfile: ./services/auth-service/Dockerfile
+    expose:
+      - "3001"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=auth-service
+      - PORT=3001
+      - REDIS_HOST=redis
+      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_auth?authSource=admin
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  # ─────────────────────────────────────
+  #  Profile Service (Private / Internal Only)
+  # ─────────────────────────────────────
+  profile-service:
+    build:
+      context: .
+      dockerfile: ./services/profile-service/Dockerfile
+    expose:
+      - "3002"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=profile-service
+      - PORT=3002
+      - REDIS_HOST=redis
+      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_auth?authSource=admin
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  # ─────────────────────────────────────
+  #  Matching Service (Private / Internal Only)
+  # ─────────────────────────────────────
+  matching-service:
+    build:
+      context: .
+      dockerfile: ./services/matching-service/Dockerfile
+    expose:
+      - "3003"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=matching-service
+      - PORT=3003
+      - REDIS_HOST=redis
+      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_matching?authSource=admin
+      - PROFILE_SERVICE_URL=http://profile-service:3002
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  # ─────────────────────────────────────
+  #  Chat Service (Private / Internal Only)
+  # ─────────────────────────────────────
+  chat-service:
+    build:
+      context: .
+      dockerfile: ./services/chat-service/Dockerfile
+    expose:
+      - "3004"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=chat-service
+      - PORT=3004
+      - REDIS_HOST=redis
+      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_chat?authSource=admin
+      - MATCHING_SERVICE_URL=http://matching-service:3003
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  # ─────────────────────────────────────
+  #  Payment Service (Private / Internal Only)
+  # ─────────────────────────────────────
+  payment-service:
+    build:
+      context: .
+      dockerfile: ./services/payment-service/Dockerfile
+    expose:
+      - "3005"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=payment-service
+      - PORT=3005
+      - REDIS_HOST=redis
+      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_payment?authSource=admin
+      - PROFILE_SERVICE_URL=http://profile-service:3002
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+  # ─────────────────────────────────────
+  #  Notification Service (Private / Internal Only)
+  # ─────────────────────────────────────
+  notification-service:
+    build:
+      context: .
+      dockerfile: ./services/notification-service/Dockerfile
+    expose:
+      - "3006"
+    env_file: .env
+    environment:
+      - SERVICE_NAME=notification-service
+      - PORT=3006
+      - REDIS_HOST=redis
+      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_auth?authSource=admin
+      - PROFILE_SERVICE_URL=http://profile-service:3002
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+
+volumes:
+  redis_data:
+  mongo_data:

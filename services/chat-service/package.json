@@ -1,0 +1,18 @@
+{
+  "name": "chat-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node src/app.js"
+  },
+  "dependencies": {
+    "@devtinder/shared": "file:../../shared",
+    "cookie": "^0.6.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.21.0",
+    "mongoose": "^8.8.0",
+    "socket.io": "^4.8.0"
+  }
+}
