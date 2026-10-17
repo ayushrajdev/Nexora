@@ -1,12 +1,12 @@
 services:
   # ─────────────────────────────────────
-  #  Infrastructure (Internal to Docker Network)
+  #  Infrastructure
   # ─────────────────────────────────────
   redis:
     image: redis:7-alpine
-    # No external ports exposed — only accessible by containers inside the network
-    expose:
-      - "6379"
+    # Expose port 6379 to the host system
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -16,30 +16,13 @@ services:
       timeout: 3s
       retries: 5
 
-  mongodb:
-    image: mongo:7
-    # No external ports exposed — only accessible by containers inside the network
-    expose:
-      - "27017"
-    volumes:
-      - mongo_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-admin123}
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --quiet
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
   # ─────────────────────────────────────
-  #  API Gateway (ONLY EXPOSED SERVICE)
+  #  API Gateway (ONLY PUBLIC ROUTE TO SERVICES)
   # ─────────────────────────────────────
   api-gateway:
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile
-    # ONLY port 3000 is open to the outside world (host machine / frontend)
     ports:
       - "3000:3000"
     env_file: .env
@@ -66,15 +49,15 @@ services:
     expose:
       - "3001"
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SERVICE_NAME=auth-service
       - PORT=3001
       - REDIS_HOST=redis
-      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_auth?authSource=admin
+      - DB_CONNECTION_STRING=mongodb://host.docker.internal:27017/devtinder_auth?directConnection=true
     depends_on:
       redis:
-        condition: service_healthy
-      mongodb:
         condition: service_healthy
 
   # ─────────────────────────────────────
@@ -87,15 +70,15 @@ services:
     expose:
       - "3002"
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SERVICE_NAME=profile-service
       - PORT=3002
       - REDIS_HOST=redis
-      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_auth?authSource=admin
+      - DB_CONNECTION_STRING=mongodb://host.docker.internal:27017/devtinder_auth?directConnection=true
     depends_on:
       redis:
-        condition: service_healthy
-      mongodb:
         condition: service_healthy
 
   # ─────────────────────────────────────
@@ -108,16 +91,16 @@ services:
     expose:
       - "3003"
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SERVICE_NAME=matching-service
       - PORT=3003
       - REDIS_HOST=redis
-      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_matching?authSource=admin
+      - DB_CONNECTION_STRING=mongodb://host.docker.internal:27017/devtinder_matching?directConnection=true
       - PROFILE_SERVICE_URL=http://profile-service:3002
     depends_on:
       redis:
-        condition: service_healthy
-      mongodb:
         condition: service_healthy
 
   # ─────────────────────────────────────
@@ -130,16 +113,16 @@ services:
     expose:
       - "3004"
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SERVICE_NAME=chat-service
       - PORT=3004
       - REDIS_HOST=redis
-      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_chat?authSource=admin
+      - DB_CONNECTION_STRING=mongodb://host.docker.internal:27017/devtinder_chat?directConnection=true
       - MATCHING_SERVICE_URL=http://matching-service:3003
     depends_on:
       redis:
-        condition: service_healthy
-      mongodb:
         condition: service_healthy
 
   # ─────────────────────────────────────
@@ -152,16 +135,16 @@ services:
     expose:
       - "3005"
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SERVICE_NAME=payment-service
       - PORT=3005
       - REDIS_HOST=redis
-      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_payment?authSource=admin
+      - DB_CONNECTION_STRING=mongodb://host.docker.internal:27017/devtinder_payment?directConnection=true
       - PROFILE_SERVICE_URL=http://profile-service:3002
     depends_on:
       redis:
-        condition: service_healthy
-      mongodb:
         condition: service_healthy
 
   # ─────────────────────────────────────
@@ -174,18 +157,17 @@ services:
     expose:
       - "3006"
     env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - SERVICE_NAME=notification-service
       - PORT=3006
       - REDIS_HOST=redis
-      - DB_CONNECTION_STRING=mongodb://admin:admin123@mongodb:27017/devtinder_auth?authSource=admin
+      - DB_CONNECTION_STRING=mongodb://host.docker.internal:27017/devtinder_auth?directConnection=true
       - PROFILE_SERVICE_URL=http://profile-service:3002
     depends_on:
       redis:
         condition: service_healthy
-      mongodb:
-        condition: service_healthy
 
 volumes:
   redis_data:
-  mongo_data:

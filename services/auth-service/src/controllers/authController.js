@@ -5,7 +5,7 @@ class AuthController {
   async signup(req, res, next) {
     try {
       const user = await authService.signup(req.body, req, res);
-      sendCreated(res, 'User created successfully', { user });
+      sendCreated(res, { user }, 'User created successfully');
     } catch (error) {
       next(error);
     }
@@ -14,7 +14,7 @@ class AuthController {
   async login(req, res, next) {
     try {
       const user = await authService.login(req.body, req, res);
-      sendSuccess(res, 'Login successful', { user });
+      sendSuccess(res, { user }, 'Login successful');
     } catch (error) {
       next(error);
     }

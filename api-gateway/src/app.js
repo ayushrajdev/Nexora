@@ -3,7 +3,12 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const http = require('http');
-const { logger, getSession, refreshSession, COOKIE_NAME } = require('@devtinder/shared');
+const {
+    logger,
+    getSession,
+    refreshSession,
+    COOKIE_NAME,
+} = require('@devtinder/shared');
 
 const services = require('./config/services');
 const routes = require('./routes');
@@ -14,10 +19,12 @@ const { createServiceProxy } = require('./proxy/proxyMiddleware');
 
 const app = express();
 
-app.use(cors({
-  origin: services.FRONT_END_URL,
-  credentials: true
-}));
+app.use(
+    cors({
+        origin: services.FRONT_END_URL,
+        credentials: true,
+    }),
+);
 
 app.use(cookieParser());
 app.use(sanitizeHeaders);
@@ -36,57 +43,65 @@ const chatWsProxy = createServiceProxy(services.CHAT_SERVICE_URL);
 app.use(errorHandler);
 
 const startServer = () => {
-  const server = http.createServer(app);
+    const server = http.createServer(app);
 
-  // Upgrade requests for websockets
-  server.on('upgrade', async (req, socket, head) => {
-    try {
-      if (req.url.startsWith('/socket.io/')) {
-        const cookies = req.headers.cookie;
-        let sid = null;
-        if (cookies) {
-          const parsedCookies = cookies.split(';').reduce((res, c) => {
-            const [key, val] = c.trim().split('=').map(decodeURIComponent);
-            res[key] = val;
-            return res;
-          }, {});
-          
-          sid = parsedCookies[COOKIE_NAME] || parsedCookies['sid'];
+    // Upgrade requests for websockets
+    server.on('upgrade', async (req, socket, head) => {
+        try {
+            if (req.url.startsWith('/socket.io/')) {
+                const cookies = req.headers.cookie;
+                let sid = null;
+                if (cookies) {
+                    const parsedCookies = cookies
+                        .split(';')
+                        .reduce((res, c) => {
+                            const [key, val] = c
+                                .trim()
+                                .split('=')
+                                .map(decodeURIComponent);
+                            res[key] = val;
+                            return res;
+                        }, {});
+
+                    sid = parsedCookies[COOKIE_NAME] || parsedCookies['sid'];
+                }
+
+                if (sid) {
+                    const session = await getSession(sid);
+                    if (session) {
+                        req.headers['x-user-id'] = session.userId;
+                        req.headers['x-user-email'] = session.email;
+                        req.headers['x-user-name'] = session.firstName;
+                        req.headers['x-user-premium'] = session.isPremium
+                            ? 'true'
+                            : 'false';
+                        req.headers['x-user-membership'] =
+                            session.membershipType || 'free';
+
+                        await refreshSession(sid);
+                    }
+                }
+                chatWsProxy.upgrade(req, socket, head);
+            } else {
+                socket.destroy();
+            }
+        } catch (err) {
+            logger.error('WebSocket upgrade error', err);
+            socket.destroy();
         }
+    });
 
-        if (sid) {
-          const session = await getSession(sid);
-          if (session) {
-            req.headers['x-user-id'] = session.userId;
-            req.headers['x-user-email'] = session.email;
-            req.headers['x-user-name'] = session.firstName;
-            req.headers['x-user-premium'] = session.isPremium ? 'true' : 'false';
-            req.headers['x-user-membership'] = session.membershipType || 'free';
-            
-            await refreshSession(sid);
-          }
-        }
-        chatWsProxy.upgrade(req, socket, head);
-      } else {
-        socket.destroy();
-      }
-    } catch (err) {
-      logger.error('WebSocket upgrade error', err);
-      socket.destroy();
-    }
-  });
+    const PORT = services.PORT;
+    server.listen(PORT, () => {
+        logger.info(`API Gateway listening on port ${PORT}`);
+    });
 
-  const PORT = services.PORT;
-  server.listen(PORT, () => {
-    logger.info(`API Gateway listening on port ${PORT}`);
-  });
-
-  return server;
+    return server;
 };
 
 // If run directly
 if (require.main === module) {
-  startServer();
+    startServer();
 }
 
 module.exports = { app, startServer };

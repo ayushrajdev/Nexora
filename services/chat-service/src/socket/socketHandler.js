@@ -1,7 +1,7 @@
 const { Server } = require('socket.io');
 const cookie = require('cookie');
 const crypto = require('crypto');
-const { getSession } = require('@devtinder/shared');
+const { getSession, COOKIE_NAME } = require('@devtinder/shared');
 const chatRepository = require('../repositories/chatRepository');
 
 const setupSocket = (server) => {
@@ -15,7 +15,7 @@ const setupSocket = (server) => {
   io.on('connection', async (socket) => {
     try {
       const cookies = cookie.parse(socket.handshake.headers.cookie || '');
-      const sid = cookies.token;
+      const sid = cookies[COOKIE_NAME] || cookies.sid || cookies.token;
       
       if (!sid) {
         socket.disconnect();
