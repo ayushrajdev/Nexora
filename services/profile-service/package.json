@@ -9,6 +9,7 @@
   "dependencies": {
     "@devtinder/shared": "file:../../shared",
     "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.0",
     "express": "^4.21.0",
     "mongoose": "^8.8.0",

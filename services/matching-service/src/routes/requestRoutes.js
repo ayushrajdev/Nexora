@@ -7,4 +7,4 @@ const router = express.Router();
 router.post('/send/:status/:toUserId', internalAuth, requestController.sendRequest.bind(requestController));
 router.post('/review/:status/:requestId', internalAuth, requestController.reviewRequest.bind(requestController));
 
-module.exports = router;\n
+module.exports = router;

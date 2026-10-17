@@ -41,4 +41,4 @@ class ProfileClient {
   }
 }
 
-module.exports = new ProfileClient();\n
+module.exports = new ProfileClient();

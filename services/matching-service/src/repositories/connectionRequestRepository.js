@@ -53,4 +53,4 @@ class ConnectionRequestRepository {
   }
 }
 
-module.exports = new ConnectionRequestRepository();\n
+module.exports = new ConnectionRequestRepository();

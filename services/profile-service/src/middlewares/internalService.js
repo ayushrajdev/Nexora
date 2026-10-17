@@ -8,4 +8,4 @@ const verifyInternalService = (req, res, next) => {
   next();
 };
 
-module.exports = verifyInternalService;\n
+module.exports = verifyInternalService;

@@ -11,17 +11,17 @@ class SessionService {
         // Generate a unique session ID
         // const sessionId = crypto.randomUUID();
 
-        // // 1. Create session in Redis
-        // const sessionData = {
-        //     userId: user._id.toString(),
-        //     email: user.emailId,
-        //     firstName: user.firstName,
-        //     isPremium: user.isPremium,
-        //     membershipType: user.membershipType,
-        // };
+        // 1. Create session data object
+        const sessionPayload = {
+            userId: user._id.toString(),
+            email: user.emailId,
+            firstName: user.firstName,
+            isPremium: user.isPremium || false,
+            membershipType: user.membershipType || null,
+        };
 
         // Save to Redis (createRedisSession generates and returns sessionId)
-        const { sessionId ,sessionData} = await createRedisSession(sessionData);
+        const { sessionId, sessionData } = await createRedisSession(sessionPayload);
 
         // 2. Create session in MongoDB
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours

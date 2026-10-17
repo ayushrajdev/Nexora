@@ -32,4 +32,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, startServer };\n
+module.exports = { app, startServer };

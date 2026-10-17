@@ -101,4 +101,4 @@ class MatchingService {
   }
 }
 
-module.exports = new MatchingService();\n
+module.exports = new MatchingService();

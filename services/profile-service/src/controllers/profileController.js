@@ -51,4 +51,4 @@ class ProfileController {
   }
 }
 
-module.exports = new ProfileController();\n
+module.exports = new ProfileController();

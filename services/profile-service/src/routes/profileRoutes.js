@@ -12,4 +12,4 @@ router.patch('/profile/password', internalAuth, profileController.changePassword
 router.get('/profile/feed', verifyInternalService, profileController.getFeed.bind(profileController));
 router.get('/profile/:userId', verifyInternalService, profileController.getInternalProfile.bind(profileController));
 
-module.exports = router;\n
+module.exports = router;

@@ -65,4 +65,4 @@ class ProfileService {
   }
 }
 
-module.exports = new ProfileService();\n
+module.exports = new ProfileService();

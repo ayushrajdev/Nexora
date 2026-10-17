@@ -6,8 +6,10 @@ const services = require('../config/services');
 
 const router = express.Router();
 
-// Auth service proxy
-const authProxy = createServiceProxy(services.AUTH_SERVICE_URL);
+// Auth service proxy (strips /auth prefix so downstream service receives /signup, /login, /oauth/*, etc.)
+const authProxy = createServiceProxy(services.AUTH_SERVICE_URL, {
+  pathRewrite: { '^/auth': '' }
+});
 
 // Public auth routes
 router.post('/auth/signup', authLimiter, authProxy);

@@ -17,7 +17,6 @@ const userSchema = new mongoose.Schema({
   oauthId:        { type: String },
 }, { timestamps: true });
 
-userSchema.index({ emailId: 1 }, { unique: true });
 userSchema.index({ oauthProvider: 1, oauthId: 1 });
 
 userSchema.methods.validatePassword = async function (inputPassword) {
