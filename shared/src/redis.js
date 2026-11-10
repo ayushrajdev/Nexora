@@ -1,5 +1,5 @@
-const Redis = require('ioredis');
-const logger = require('./logger');
+import Redis from 'ioredis';
+import logger from './logger.js';
 
 /** @type {Redis | null} */
 let client = null;
@@ -8,7 +8,7 @@ let client = null;
  * Returns a singleton Redis client.
  * Creates the connection on first call and reuses it thereafter.
  */
-const getRedisClient = () => {
+export const getRedisClient = () => {
   if (!client) {
     client = new Redis({
       host: process.env.REDIS_HOST || 'localhost',
@@ -28,14 +28,20 @@ const getRedisClient = () => {
 };
 
 /**
+ * Allows injecting a mock or custom Redis client (useful for unit/integration testing).
+ * @param {any} customClient
+ */
+export const setRedisClient = (customClient) => {
+  client = customClient;
+};
+
+/**
  * Gracefully close the Redis connection.
  */
-const closeRedisConnection = async () => {
+export const closeRedisConnection = async () => {
   if (client) {
     await client.quit();
     client = null;
     logger.info('Redis connection closed');
   }
 };
-
-module.exports = { getRedisClient, closeRedisConnection };

@@ -1,14 +1,27 @@
-const { createServiceClient } = require('@devtinder/shared');
+import { createServiceClient } from '@devtinder/shared';
 
-const matchingClient = createServiceClient(process.env.MATCHING_SERVICE_URL || 'http://localhost:3003');
+export class MatchingClient {
+  constructor() {
+    this.client = createServiceClient(
+      process.env.MATCHING_SERVICE_URL || 'http://localhost:3003',
+      {
+        headers: {
+          'x-internal-service':
+            process.env.INTERNAL_SERVICE_SECRET || 'secret',
+        },
+      }
+    );
+  }
 
-class MatchingClient {
   async verifyConnection(userId, targetUserId) {
     try {
-      const response = await matchingClient.get(`/user/connections/verify/${targetUserId}`, {
-        headers: { 'x-user-id': userId.toString() }
-      });
-      return response.data;
+      const response = await this.client.get(
+        `/user/connections/verify/${targetUserId}`,
+        {
+          headers: { 'x-user-id': userId.toString() },
+        }
+      );
+      return Boolean(response.data?.data?.connected ?? response.data?.connected);
     } catch (error) {
       if (error.response && error.response.status === 403) {
         return false;
@@ -18,4 +31,5 @@ class MatchingClient {
   }
 }
 
-module.exports = new MatchingClient();
+export const matchingClient = new MatchingClient();
+export default matchingClient;

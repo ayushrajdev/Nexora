@@ -1,11 +1,13 @@
 {
   "name": "notification-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Notification and background worker service for DevTinder",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "node src/app.js"
+    "dev": "node src/app.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.716.0",

@@ -1,6 +1,6 @@
-const Payment = require('../models/payment');
+import Payment from '../models/payment.js';
 
-class PaymentRepository {
+export class PaymentRepository {
   async createPayment(paymentData) {
     return await Payment.create(paymentData);
   }
@@ -18,4 +18,5 @@ class PaymentRepository {
   }
 }
 
-module.exports = new PaymentRepository();
+export const paymentRepository = new PaymentRepository();
+export default paymentRepository;

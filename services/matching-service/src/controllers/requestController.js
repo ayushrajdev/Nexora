@@ -1,11 +1,15 @@
-const matchingService = require('../services/matchingService');
-const { sendSuccess } = require('@devtinder/shared');
+import matchingService from '../services/matchingService.js';
+import { sendSuccess } from '@devtinder/shared';
 
-class RequestController {
+export class RequestController {
   async sendRequest(req, res, next) {
     try {
       const { status, toUserId } = req.params;
-      const request = await matchingService.sendRequest(req.user, toUserId, status);
+      const request = await matchingService.sendRequest(
+        req.user,
+        toUserId,
+        status
+      );
       sendSuccess(res, request);
     } catch (err) {
       next(err);
@@ -15,7 +19,11 @@ class RequestController {
   async reviewRequest(req, res, next) {
     try {
       const { status, requestId } = req.params;
-      const request = await matchingService.reviewRequest(req.user._id, requestId, status);
+      const request = await matchingService.reviewRequest(
+        req.user._id,
+        requestId,
+        status
+      );
       sendSuccess(res, request);
     } catch (err) {
       next(err);
@@ -23,4 +31,5 @@ class RequestController {
   }
 }
 
-module.exports = new RequestController();
+export const requestController = new RequestController();
+export default requestController;

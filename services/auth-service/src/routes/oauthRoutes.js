@@ -1,11 +1,12 @@
-const express = require('express');
+import express from 'express';
+import oauthController from '../controllers/oauthController.js';
+
 const router = express.Router();
-const oauthController = require('../controllers/oauthController');
 
-router.get('/google', oauthController.googleRedirect);
-router.get('/google/callback', oauthController.googleCallback);
+router.get('/google', (req, res, next) => oauthController.googleRedirect(req, res, next));
+router.get('/google/callback', (req, res, next) => oauthController.googleCallback(req, res, next));
 
-router.get('/github', oauthController.githubRedirect);
-router.get('/github/callback', oauthController.githubCallback);
+router.get('/github', (req, res, next) => oauthController.githubRedirect(req, res, next));
+router.get('/github/callback', (req, res, next) => oauthController.githubCallback(req, res, next));
 
-module.exports = router;
+export default router;

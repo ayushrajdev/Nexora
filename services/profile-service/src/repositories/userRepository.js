@@ -1,18 +1,21 @@
-const User = require('../models/user');
+import User from '../models/user.js';
 
-class UserRepository {
+export class UserRepository {
   async findById(id) {
     return User.findById(id);
   }
-  
+
   async findFeedUsers(selfId, excludeIds, page, limit) {
     const skip = (page - 1) * limit;
     return User.find({
       $and: [
         { _id: { $nin: excludeIds } },
-        { _id: { $ne: selfId } }
-      ]
-    }).select('firstName lastName photoUrl age gender about skills').skip(skip).limit(limit);
+        { _id: { $ne: selfId } },
+      ],
+    })
+      .select('firstName lastName photoUrl age gender about skills')
+      .skip(skip)
+      .limit(limit);
   }
 
   async updateById(id, data) {
@@ -20,4 +23,5 @@ class UserRepository {
   }
 }
 
-module.exports = new UserRepository();
+export const userRepository = new UserRepository();
+export default userRepository;

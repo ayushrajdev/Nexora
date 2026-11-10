@@ -1,7 +1,7 @@
-const chatService = require('../services/chatService');
-const { sendSuccess } = require('@devtinder/shared');
+import chatService from '../services/chatService.js';
+import { sendSuccess } from '@devtinder/shared';
 
-class ChatController {
+export class ChatController {
   async getChat(req, res, next) {
     try {
       const userId = req.user._id;
@@ -14,4 +14,5 @@ class ChatController {
   }
 }
 
-module.exports = new ChatController();
+export const chatController = new ChatController();
+export default chatController;

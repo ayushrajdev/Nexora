@@ -1,10 +1,17 @@
-const validator = require('validator');
-const { BadRequestError } = require('@devtinder/shared');
+import validator from 'validator';
+import { BadRequestError } from '@devtinder/shared';
 
-const validateSignup = (req, res, next) => {
+export const validateSignup = (req, res, next) => {
   const { firstName, emailId, password } = req.body;
-  if (!firstName || typeof firstName !== 'string' || firstName.trim().length < 3 || firstName.trim().length > 50) {
-    return next(new BadRequestError('First name must be between 3 and 50 characters'));
+  if (
+    !firstName ||
+    typeof firstName !== 'string' ||
+    firstName.trim().length < 3 ||
+    firstName.trim().length > 50
+  ) {
+    return next(
+      new BadRequestError('First name must be between 3 and 50 characters')
+    );
   }
   if (!emailId || !validator.isEmail(emailId)) {
     return next(new BadRequestError('Valid email is required'));
@@ -15,7 +22,7 @@ const validateSignup = (req, res, next) => {
   next();
 };
 
-const validateLogin = (req, res, next) => {
+export const validateLogin = (req, res, next) => {
   const { emailId, password } = req.body;
   if (!emailId || !validator.isEmail(emailId)) {
     return next(new BadRequestError('Valid email is required'));
@@ -24,9 +31,4 @@ const validateLogin = (req, res, next) => {
     return next(new BadRequestError('Password is required'));
   }
   next();
-};
-
-module.exports = {
-  validateSignup,
-  validateLogin
 };

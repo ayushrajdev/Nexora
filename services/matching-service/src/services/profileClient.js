@@ -1,13 +1,14 @@
-const { createServiceClient, InternalError } = require('@devtinder/shared');
+import { createServiceClient, InternalError } from '@devtinder/shared';
 
-class ProfileClient {
+export class ProfileClient {
   constructor() {
     this.client = createServiceClient(
       process.env.PROFILE_SERVICE_URL || 'http://localhost:3002',
       {
         headers: {
-          'x-internal-service': process.env.INTERNAL_SERVICE_SECRET || 'secret'
-        }
+          'x-internal-service':
+            process.env.INTERNAL_SERVICE_SECRET || 'secret',
+        },
       }
     );
   }
@@ -31,14 +32,15 @@ class ProfileClient {
           selfId,
           exclude: excludeIds.join(','),
           page,
-          limit
-        }
+          limit,
+        },
       });
       return response.data.data;
-    } catch (err) {
+    } catch {
       throw new InternalError('Failed to fetch feed');
     }
   }
 }
 
-module.exports = new ProfileClient();
+export const profileClient = new ProfileClient();
+export default profileClient;

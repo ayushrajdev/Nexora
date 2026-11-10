@@ -1,14 +1,14 @@
-const express = require('express');
-const { createServiceProxy } = require('../proxy/proxyMiddleware');
-const sessionAuth = require('../middlewares/sessionAuth');
-const { authLimiter } = require('../middlewares/rateLimiter');
-const services = require('../config/services');
+import express from 'express';
+import { createServiceProxy } from '../proxy/proxyMiddleware.js';
+import sessionAuth from '../middlewares/sessionAuth.js';
+import { authLimiter } from '../middlewares/rateLimiter.js';
+import services from '../config/services.js';
 
 const router = express.Router();
 
 // Auth service proxy (strips /auth prefix so downstream service receives /signup, /login, /oauth/*, etc.)
 const authProxy = createServiceProxy(services.AUTH_SERVICE_URL, {
-  pathRewrite: { '^/auth': '' }
+  pathRewrite: { '^/auth': '' },
 });
 
 // Public auth routes
@@ -39,4 +39,4 @@ router.post('/payment/create', sessionAuth, paymentProxy);
 router.post('/payment/webhook', paymentProxy); // Webhook is public (Razorpay)
 router.get('/payment/premium/verify', sessionAuth, paymentProxy);
 
-module.exports = router;
+export default router;

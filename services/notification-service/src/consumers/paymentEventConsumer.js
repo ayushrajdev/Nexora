@@ -1,17 +1,26 @@
-const { createConsumer, QUEUES, EVENTS } = require('@devtinder/shared');
-const emailService = require('../services/emailService');
-const profileClient = require('../services/profileClient');
+import { createConsumer, QUEUES, EVENTS } from '@devtinder/shared';
+import emailService from '../services/emailService.js';
+import profileClient from '../services/profileClient.js';
 
-const worker = createConsumer(QUEUES.PAYMENT_EVENTS, async (job) => {
-  if (job.name === EVENTS.PAYMENT_CAPTURED) {
-    const { userId, membershipType } = job.data;
-    const email = await profileClient.getUserEmail(userId);
+export const handlePaymentEventJob = async (
+  job,
+  mailer = emailService,
+  profiles = profileClient
+) => {
+  const eventName = job.name || job.data?.event;
+  const payload = job.data?.payload || job.data;
+
+  if (eventName === EVENTS.PAYMENT_CAPTURED) {
+    const { userId, membershipType } = payload;
+    const email = await profiles.getUserEmail(userId);
     if (email) {
-      await emailService.sendPaymentConfirmationEmail(email, membershipType);
+      await mailer.sendPaymentConfirmationEmail(email, membershipType);
     }
   }
-});
+};
 
-worker.on('failed', (job, err) => {
-  console.error(`Job ${job.id} failed in PAYMENT_EVENTS:`, err);
-});
+export const startPaymentEventConsumer = () => {
+  return createConsumer(QUEUES.PAYMENT_EVENTS, (job) =>
+    handlePaymentEventJob(job)
+  );
+};

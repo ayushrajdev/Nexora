@@ -1,12 +1,12 @@
-const ConnectionRequest = require('../models/connectionRequest');
+import ConnectionRequest from '../models/connectionRequest.js';
 
-class ConnectionRequestRepository {
+export class ConnectionRequestRepository {
   async findExistingRequest(userId1, userId2) {
     return ConnectionRequest.findOne({
       $or: [
         { fromUserId: userId1, toUserId: userId2 },
-        { fromUserId: userId2, toUserId: userId1 }
-      ]
+        { fromUserId: userId2, toUserId: userId1 },
+      ],
     });
   }
 
@@ -25,11 +25,8 @@ class ConnectionRequestRepository {
 
   async findConnections(userId) {
     return ConnectionRequest.find({
-      $or: [
-        { fromUserId: userId },
-        { toUserId: userId }
-      ],
-      status: 'accepted'
+      $or: [{ fromUserId: userId }, { toUserId: userId }],
+      status: 'accepted',
     });
   }
 
@@ -37,20 +34,18 @@ class ConnectionRequestRepository {
     return ConnectionRequest.findOne({
       $or: [
         { fromUserId: userId1, toUserId: userId2 },
-        { fromUserId: userId2, toUserId: userId1 }
+        { fromUserId: userId2, toUserId: userId1 },
       ],
-      status: 'accepted'
+      status: 'accepted',
     });
   }
 
   async findAllRequestsForUser(userId) {
     return ConnectionRequest.find({
-      $or: [
-        { fromUserId: userId },
-        { toUserId: userId }
-      ]
+      $or: [{ fromUserId: userId }, { toUserId: userId }],
     });
   }
 }
 
-module.exports = new ConnectionRequestRepository();
+export const connectionRequestRepository = new ConnectionRequestRepository();
+export default connectionRequestRepository;

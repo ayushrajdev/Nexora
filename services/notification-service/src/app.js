@@ -1,28 +1,35 @@
-require('dotenv').config();
-const express = require('express');
-const { errorHandler } = require('@devtinder/shared');
-require('./consumers/userEventConsumer');
-require('./consumers/connectionEventConsumer');
-require('./consumers/paymentEventConsumer');
-require('./cron/dailyDigest');
+import 'dotenv/config';
+import express from 'express';
+import { fileURLToPath } from 'url';
+import { errorHandler, logger } from '@devtinder/shared';
+import { startUserEventConsumer } from './consumers/userEventConsumer.js';
+import { startConnectionEventConsumer } from './consumers/connectionEventConsumer.js';
+import { startPaymentEventConsumer } from './consumers/paymentEventConsumer.js';
+import { startDailyDigestCron } from './cron/dailyDigest.js';
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
-// basic health check
-app.get('/health', (req, res) => res.send('OK'));
+// Basic health check
+app.get('/health', (_req, res) => res.send('OK'));
 
 app.use(errorHandler);
 
-const startServer = () => {
+export const startWorkers = () => {
+  startUserEventConsumer();
+  startConnectionEventConsumer();
+  startPaymentEventConsumer();
+  startDailyDigestCron();
+};
+
+export const startServer = () => {
+  startWorkers();
   const port = process.env.PORT || 3006;
   app.listen(port, () => {
-    console.log(`Notification Service listening on port ${port}`);
+    logger.info(`Notification Service listening on port ${port}`);
   });
 };
 
-if (require.main === module) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   startServer();
 }
-
-module.exports = { app, startServer };

@@ -1,5 +1,5 @@
-const logger = require('./logger');
-const { AppError } = require('./errors');
+import logger from './logger.js';
+import { AppError } from './errors.js';
 
 /**
  * Global Express error-handling middleware.
@@ -9,7 +9,7 @@ const { AppError } = require('./errors');
  * - Unexpected errors → 500 with generic message
  */
 // eslint-disable-next-line no-unused-vars
-const errorHandler = (err, req, res, _next) => {
+export const errorHandler = (err, req, res, _next) => {
   // Mongoose validation error
   if (err.name === 'ValidationError') {
     const messages = Object.values(err.errors).map((e) => e.message);
@@ -51,5 +51,3 @@ const errorHandler = (err, req, res, _next) => {
         : err.message,
   });
 };
-
-module.exports = { errorHandler };

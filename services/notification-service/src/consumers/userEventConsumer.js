@@ -1,15 +1,18 @@
-const { createConsumer, QUEUES, EVENTS } = require('@devtinder/shared');
-const emailService = require('../services/emailService');
+import { createConsumer, QUEUES, EVENTS } from '@devtinder/shared';
+import emailService from '../services/emailService.js';
 
-const worker = createConsumer(QUEUES.USER_EVENTS, async (job) => {
-  if (job.name === EVENTS.USER_CREATED) {
-    const { emailId, firstName } = job.data;
+export const handleUserEventJob = async (job, mailer = emailService) => {
+  const eventName = job.name || job.data?.event;
+  const payload = job.data?.payload || job.data;
+
+  if (eventName === EVENTS.USER_CREATED) {
+    const { emailId, firstName } = payload;
     if (emailId) {
-      await emailService.sendWelcomeEmail(emailId, firstName);
+      await mailer.sendWelcomeEmail(emailId, firstName);
     }
   }
-});
+};
 
-worker.on('failed', (job, err) => {
-  console.error(`Job ${job.id} failed in USER_EVENTS:`, err);
-});
+export const startUserEventConsumer = () => {
+  return createConsumer(QUEUES.USER_EVENTS, (job) => handleUserEventJob(job));
+};

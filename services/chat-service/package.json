@@ -1,11 +1,13 @@
 {
   "name": "chat-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Real-time chat service for DevTinder",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "node src/app.js"
+    "dev": "node src/app.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@devtinder/shared": "file:../../shared",

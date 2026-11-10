@@ -1,9 +1,13 @@
-const mongoose = require('mongoose');
-const { logger } = require('@devtinder/shared');
+import mongoose from 'mongoose';
+import { logger } from '@devtinder/shared';
 
-const connectDB = async () => {
+export const connectDB = async () => {
   try {
-    const mongoUri = process.env.DB_CONNECTION_STRING || process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/devtinder_auth';
+    const mongoUri =
+      process.env.DB_CONNECTION_STRING ||
+      process.env.MONGODB_URI ||
+      process.env.MONGO_URI ||
+      'mongodb://localhost:27017/devtinder_auth';
     const conn = await mongoose.connect(mongoUri);
     return conn;
   } catch (error) {
@@ -12,4 +16,4 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+export default connectDB;

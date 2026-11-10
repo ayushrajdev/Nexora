@@ -1,5 +1,5 @@
-const axios = require('axios');
-const logger = require('./logger');
+import axios from 'axios';
+import logger from './logger.js';
 
 /**
  * Factory: creates a pre-configured Axios instance for calling a sibling service.
@@ -8,15 +8,16 @@ const logger = require('./logger');
  * @param {object} [opts]   - Extra Axios defaults
  * @returns {import('axios').AxiosInstance}
  */
-const createServiceClient = (baseURL, opts = {}) => {
+export const createServiceClient = (baseURL, opts = {}) => {
   const client = axios.create({
     baseURL,
     timeout: parseInt(process.env.SERVICE_TIMEOUT, 10) || 5000,
+    ...opts,
     headers: {
       'Content-Type': 'application/json',
-      'X-Internal-Service': process.env.SERVICE_NAME || 'unknown',
+      'X-Internal-Service': process.env.INTERNAL_SERVICE_SECRET || process.env.SERVICE_NAME || 'unknown',
+      ...(opts.headers || {}),
     },
-    ...opts,
   });
 
   // ---------- Request interceptor ----------
@@ -45,5 +46,3 @@ const createServiceClient = (baseURL, opts = {}) => {
 
   return client;
 };
-
-module.exports = { createServiceClient };

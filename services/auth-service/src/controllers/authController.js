@@ -1,7 +1,7 @@
-const authService = require('../services/authService');
-const { sendSuccess, sendCreated, sendNoContent } = require('@devtinder/shared');
+import authService from '../services/authService.js';
+import { sendSuccess, sendCreated, sendNoContent } from '@devtinder/shared';
 
-class AuthController {
+export class AuthController {
   async signup(req, res, next) {
     try {
       const user = await authService.signup(req.body, req, res);
@@ -30,4 +30,5 @@ class AuthController {
   }
 }
 
-module.exports = new AuthController();
+export const authController = new AuthController();
+export default authController;

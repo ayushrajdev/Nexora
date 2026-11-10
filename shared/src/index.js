@@ -1,107 +1,52 @@
 /**
- * @devtinder/shared — Barrel export
+ * @devtinder/shared — Barrel export (ES Modules)
  *
  * Usage in a microservice:
- *   const { logger, getRedisClient, createPublisher } = require('@devtinder/shared');
+ *   import { logger, getRedisClient, createPublisher } from '@devtinder/shared';
  */
 
-const logger = require('./logger');
-const { getRedisClient, closeRedisConnection } = require('./redis');
-const {
-    createPublisher,
-    createConsumer,
-    publishEvent,
-} = require('./messageQueue');
-const {
-    createSession,
-    getSession,
-    destroySession,
-    refreshSession,
-    updateSession,
-    SESSION_PREFIX,
-    DEFAULT_TTL,
-} = require('./sessionManager');
-const { internalAuth, optionalAuth } = require('./authMiddleware');
-const { errorHandler } = require('./errorHandler');
-const {
-    sendSuccess,
-    sendCreated,
-    sendNoContent,
-} = require('./responseFormatter');
-const { createServiceClient } = require('./httpClient');
-const {
-    AppError,
-    BadRequestError,
-    UnauthorizedError,
-    ForbiddenError,
-    NotFoundError,
-    ConflictError,
-    InternalError,
-} = require('./errors');
-const {
-    QUEUES,
-    EVENTS,
-    SERVICES,
-    MEMBERSHIP_AMOUNT,
-    ALLOWED_PROFILE_UPDATES,
-    CONNECTION_STATUS,
-    GENDER,
-    USER_SAFE_FIELDS,
-    COOKIE_NAME,
-} = require('./constants');
-
-module.exports = {
-    // Logger
-    logger,
-
-    // Redis
-    getRedisClient,
-    closeRedisConnection,
-
-    // Message Queue
-    createPublisher,
-    createConsumer,
-    publishEvent,
-
-    // Sessions
-    createSession,
-    getSession,
-    destroySession,
-    refreshSession,
-    updateSession,
-    SESSION_PREFIX,
-    DEFAULT_TTL,
-
-    // Middleware
-    internalAuth,
-    optionalAuth,
-    errorHandler,
-
-    // Response
-    sendSuccess,
-    sendCreated,
-    sendNoContent,
-
-    // HTTP Client
-    createServiceClient,
-
-    // Errors
-    AppError,
-    BadRequestError,
-    UnauthorizedError,
-    ForbiddenError,
-    NotFoundError,
-    ConflictError,
-    InternalError,
-
-    // Constants
-    QUEUES,
-    EVENTS,
-    SERVICES,
-    MEMBERSHIP_AMOUNT,
-    ALLOWED_PROFILE_UPDATES,
-    CONNECTION_STATUS,
-    GENDER,
-    USER_SAFE_FIELDS,
-    COOKIE_NAME,
-};
+export { logger, default as defaultLogger } from './logger.js';
+export { getRedisClient, setRedisClient, closeRedisConnection } from './redis.js';
+export {
+  createPublisher,
+  createConsumer,
+  publishEvent,
+  closePublishers,
+} from './messageQueue.js';
+export {
+  createSession,
+  getSession,
+  destroySession,
+  refreshSession,
+  updateSession,
+  SESSION_PREFIX,
+  DEFAULT_TTL,
+} from './sessionManager.js';
+export { internalAuth, optionalAuth } from './authMiddleware.js';
+export { errorHandler } from './errorHandler.js';
+export {
+  sendSuccess,
+  sendCreated,
+  sendNoContent,
+} from './responseFormatter.js';
+export { createServiceClient } from './httpClient.js';
+export {
+  AppError,
+  BadRequestError,
+  UnauthorizedError,
+  ForbiddenError,
+  NotFoundError,
+  ConflictError,
+  InternalError,
+} from './errors.js';
+export {
+  QUEUES,
+  EVENTS,
+  SERVICES,
+  MEMBERSHIP_AMOUNT,
+  ALLOWED_PROFILE_UPDATES,
+  CONNECTION_STATUS,
+  GENDER,
+  USER_SAFE_FIELDS,
+  COOKIE_NAME,
+} from './constants.js';

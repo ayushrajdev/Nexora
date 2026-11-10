@@ -1,13 +1,20 @@
-const { Queue, Worker } = require('bullmq');
-const { getRedisClient } = require('./redis');
-const logger = require('./logger');
+import { Queue, Worker } from 'bullmq';
+import { getRedisClient } from './redis.js';
+import logger from './logger.js';
+
+/** @type {Map<string, Queue>} */
+const publishers = new Map();
 
 /**
- * Create a BullMQ publisher (Queue) for a given event channel.
+ * Create (or retrieve cached) BullMQ publisher (Queue) for a given event channel.
  * @param {string} queueName - The queue/event channel name
  * @returns {Queue}
  */
-const createPublisher = (queueName) => {
+export const createPublisher = (queueName) => {
+  if (publishers.has(queueName)) {
+    return publishers.get(queueName);
+  }
+
   const queue = new Queue(queueName, {
     connection: getRedisClient(),
     defaultJobOptions: {
@@ -18,6 +25,7 @@ const createPublisher = (queueName) => {
     },
   });
 
+  publishers.set(queueName, queue);
   logger.info(`MQ publisher created for queue: ${queueName}`);
   return queue;
 };
@@ -29,7 +37,7 @@ const createPublisher = (queueName) => {
  * @param {object}   [options]   - Additional BullMQ Worker options
  * @returns {Worker}
  */
-const createConsumer = (queueName, handler, options = {}) => {
+export const createConsumer = (queueName, handler, options = {}) => {
   const worker = new Worker(queueName, handler, {
     connection: getRedisClient(),
     concurrency: 5,
@@ -50,14 +58,28 @@ const createConsumer = (queueName, handler, options = {}) => {
 
 /**
  * Publish a named event with payload to a queue.
- * @param {Queue}  publisher  - The BullMQ Queue instance
- * @param {string} eventName  - A descriptive job name
- * @param {object} payload    - The event data
+ * Accepts either a Queue instance or a queueName string.
+ * @param {Queue|string} publisherOrQueueName - BullMQ Queue instance or queue name string
+ * @param {string}       eventName            - Descriptive job/event name
+ * @param {object}       payload              - The event data
  */
-const publishEvent = async (publisher, eventName, payload) => {
-  const job = await publisher.add(eventName, payload);
+export const publishEvent = async (publisherOrQueueName, eventName, payload) => {
+  const queue =
+    typeof publisherOrQueueName === 'string'
+      ? createPublisher(publisherOrQueueName)
+      : publisherOrQueueName;
+
+  const job = await queue.add(eventName, payload);
   logger.info(`Event published: ${eventName} (jobId: ${job.id})`);
   return job;
 };
 
-module.exports = { createPublisher, createConsumer, publishEvent };
+/**
+ * Clears cached publishers (useful for tests/shutdown).
+ */
+export const closePublishers = async () => {
+  for (const queue of publishers.values()) {
+    await queue.close();
+  }
+  publishers.clear();
+};

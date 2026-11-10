@@ -1,14 +1,21 @@
-const paymentService = require('../services/paymentService');
-const { sendSuccess } = require('@devtinder/shared');
+import paymentService from '../services/paymentService.js';
+import { sendSuccess } from '@devtinder/shared';
 
-class PaymentController {
+export class PaymentController {
   async createOrder(req, res, next) {
     try {
       const userId = req.user._id;
       const { membershipType } = req.body;
-      const userDetails = { firstName: req.user.firstName, lastName: req.user.lastName };
-      
-      const result = await paymentService.createOrder(userId, membershipType, userDetails);
+      const userDetails = {
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+      };
+
+      const result = await paymentService.createOrder(
+        userId,
+        membershipType,
+        userDetails
+      );
       sendSuccess(res, result);
     } catch (error) {
       next(error);
@@ -36,4 +43,5 @@ class PaymentController {
   }
 }
 
-module.exports = new PaymentController();
+export const paymentController = new PaymentController();
+export default paymentController;

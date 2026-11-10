@@ -1,9 +1,9 @@
-const { UnauthorizedError } = require('./errors');
+import { UnauthorizedError } from './errors.js';
 
 /**
  * Middleware for downstream services (behind API Gateway).
  * Reads user identity from headers set by the gateway.
- * 
+ *
  * The API Gateway validates the session cookie and injects:
  *   - X-User-Id
  *   - X-User-Email
@@ -11,7 +11,7 @@ const { UnauthorizedError } = require('./errors');
  *   - X-User-Premium
  *   - X-User-Membership
  */
-const internalAuth = (req, res, next) => {
+export const internalAuth = (req, res, next) => {
   const userId = req.headers['x-user-id'];
 
   if (!userId) {
@@ -33,7 +33,7 @@ const internalAuth = (req, res, next) => {
  * Middleware that allows unauthenticated access but still populates
  * req.user if headers are present (for optional-auth routes).
  */
-const optionalAuth = (req, res, next) => {
+export const optionalAuth = (req, res, next) => {
   const userId = req.headers['x-user-id'];
 
   if (userId) {
@@ -48,5 +48,3 @@ const optionalAuth = (req, res, next) => {
 
   next();
 };
-
-module.exports = { internalAuth, optionalAuth };

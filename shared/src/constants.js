@@ -5,14 +5,14 @@
 // ──────────────────────────────────────────
 //  Message Queue — Event / Queue Names
 // ──────────────────────────────────────────
-const QUEUES = Object.freeze({
+export const QUEUES = Object.freeze({
   USER_EVENTS: 'user-events',
   CONNECTION_EVENTS: 'connection-events',
   PAYMENT_EVENTS: 'payment-events',
   NOTIFICATION_EVENTS: 'notification-events',
 });
 
-const EVENTS = Object.freeze({
+export const EVENTS = Object.freeze({
   USER_CREATED: 'user.created',
   USER_UPDATED: 'user.updated',
   USER_PREMIUM_UPGRADED: 'user.premium.upgraded',
@@ -28,7 +28,7 @@ const EVENTS = Object.freeze({
 // ──────────────────────────────────────────
 //  Service URLs (internal Docker network)
 // ──────────────────────────────────────────
-const SERVICES = Object.freeze({
+export const SERVICES = Object.freeze({
   AUTH: process.env.AUTH_SERVICE_URL || 'http://localhost:3001',
   PROFILE: process.env.PROFILE_SERVICE_URL || 'http://localhost:3002',
   MATCHING: process.env.MATCHING_SERVICE_URL || 'http://localhost:3003',
@@ -40,12 +40,12 @@ const SERVICES = Object.freeze({
 // ──────────────────────────────────────────
 //  Business Constants
 // ──────────────────────────────────────────
-const MEMBERSHIP_AMOUNT = Object.freeze({
+export const MEMBERSHIP_AMOUNT = Object.freeze({
   silver: 300,  // INR
   gold: 700,    // INR
 });
 
-const ALLOWED_PROFILE_UPDATES = Object.freeze([
+export const ALLOWED_PROFILE_UPDATES = Object.freeze([
   'firstName',
   'lastName',
   'photoUrl',
@@ -55,31 +55,19 @@ const ALLOWED_PROFILE_UPDATES = Object.freeze([
   'skills',
 ]);
 
-const CONNECTION_STATUS = Object.freeze({
+export const CONNECTION_STATUS = Object.freeze({
   IGNORED: 'ignored',
   INTERESTED: 'interested',
   ACCEPTED: 'accepted',
   REJECTED: 'rejected',
 });
 
-const GENDER = Object.freeze({
+export const GENDER = Object.freeze({
   MALE: 'male',
   FEMALE: 'female',
   OTHER: 'other',
 });
 
-const USER_SAFE_FIELDS = 'firstName lastName photoUrl age gender about skills';
+export const USER_SAFE_FIELDS = 'firstName lastName photoUrl age gender about skills';
 
-const COOKIE_NAME = 'sid';
-
-module.exports = {
-  QUEUES,
-  EVENTS,
-  SERVICES,
-  MEMBERSHIP_AMOUNT,
-  ALLOWED_PROFILE_UPDATES,
-  CONNECTION_STATUS,
-  GENDER,
-  USER_SAFE_FIELDS,
-  COOKIE_NAME,
-};
+export const COOKIE_NAME = 'sid';

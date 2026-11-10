@@ -1,17 +1,17 @@
-const { v4: uuidv4 } = require('uuid');
-const { getRedisClient } = require('./redis');
-const logger = require('./logger');
+import { v4 as uuidv4 } from 'uuid';
+import { getRedisClient } from './redis.js';
+import logger from './logger.js';
 
-const SESSION_PREFIX = 'session:';
-const DEFAULT_TTL = parseInt(process.env.SESSION_TTL, 10) || 86400; // 24 hours
+export const SESSION_PREFIX = 'session:';
+export const DEFAULT_TTL = parseInt(process.env.SESSION_TTL, 10) || 86400; // 24 hours
 
 /**
  * Create a new session in Redis.
  * @param {object} userData - User data to store in the session
  * @param {number} [ttl]   - TTL in seconds (default 24h)
- * @returns {{ sessionId: string, sessionData: object }}
+ * @returns {Promise<{ sessionId: string, sessionData: object }>}
  */
-const createSession = async (userData, ttl = DEFAULT_TTL) => {
+export const createSession = async (userData, ttl = DEFAULT_TTL) => {
   const sessionId = uuidv4();
   const redis = getRedisClient();
 
@@ -38,9 +38,9 @@ const createSession = async (userData, ttl = DEFAULT_TTL) => {
 /**
  * Retrieve a session from Redis.
  * @param {string} sessionId
- * @returns {object|null}
+ * @returns {Promise<object|null>}
  */
-const getSession = async (sessionId) => {
+export const getSession = async (sessionId) => {
   const redis = getRedisClient();
   const data = await redis.get(`${SESSION_PREFIX}${sessionId}`);
   return data ? JSON.parse(data) : null;
@@ -50,7 +50,7 @@ const getSession = async (sessionId) => {
  * Destroy a session from Redis.
  * @param {string} sessionId
  */
-const destroySession = async (sessionId) => {
+export const destroySession = async (sessionId) => {
   const redis = getRedisClient();
   await redis.del(`${SESSION_PREFIX}${sessionId}`);
   logger.info(`Session destroyed: ${sessionId}`);
@@ -61,7 +61,7 @@ const destroySession = async (sessionId) => {
  * @param {string} sessionId
  * @param {number} [ttl]
  */
-const refreshSession = async (sessionId, ttl = DEFAULT_TTL) => {
+export const refreshSession = async (sessionId, ttl = DEFAULT_TTL) => {
   const redis = getRedisClient();
   await redis.expire(`${SESSION_PREFIX}${sessionId}`, ttl);
 };
@@ -71,7 +71,7 @@ const refreshSession = async (sessionId, ttl = DEFAULT_TTL) => {
  * @param {string} sessionId
  * @param {object} updates - Partial fields to merge into existing session
  */
-const updateSession = async (sessionId, updates) => {
+export const updateSession = async (sessionId, updates) => {
   const redis = getRedisClient();
   const existing = await getSession(sessionId);
   if (!existing) return null;
@@ -86,14 +86,4 @@ const updateSession = async (sessionId, updates) => {
   );
 
   return updated;
-};
-
-module.exports = {
-  createSession,
-  getSession,
-  destroySession,
-  refreshSession,
-  updateSession,
-  SESSION_PREFIX,
-  DEFAULT_TTL,
 };

@@ -1,12 +1,27 @@
-const bcrypt = require('bcrypt');
-const userRepository = require('../repositories/userRepository');
-const sessionService = require('./sessionService');
-const { publishUserCreated } = require('../events/publisher');
-const { BadRequestError, NotFoundError, UnauthorizedError, ConflictError } = require('@devtinder/shared');
+import bcrypt from 'bcrypt';
+import userRepository from '../repositories/userRepository.js';
+import sessionService from './sessionService.js';
+import { publishUserCreated } from '../events/publisher.js';
+import {
+  BadRequestError,
+  NotFoundError,
+  UnauthorizedError,
+  ConflictError,
+} from '@devtinder/shared';
 
-class AuthService {
+export class AuthService {
   async signup(userData, req, res) {
-    const { firstName, lastName, emailId, password, age, gender, photoUrl, about, skills } = userData;
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      photoUrl,
+      about,
+      skills,
+    } = userData;
 
     // Check if user exists
     const existingUser = await userRepository.findByEmail(emailId);
@@ -27,7 +42,7 @@ class AuthService {
       gender,
       photoUrl,
       about,
-      skills
+      skills,
     });
 
     // Create session
@@ -37,23 +52,25 @@ class AuthService {
     await publishUserCreated(user);
 
     // Return user data (omit password)
-    const userObject = user.toObject();
+    const userObject = user.toObject ? user.toObject() : { ...user };
     delete userObject.password;
-    
+
     return userObject;
   }
 
   async login({ emailId, password }, req, res) {
     // Find user
     const user = await userRepository.findByEmail(emailId);
-    
+
     if (!user) {
       throw new NotFoundError('User not found');
     }
 
     // Check if OAuth user
     if (user.oauthProvider) {
-      throw new BadRequestError(`Please login with your ${user.oauthProvider} account`);
+      throw new BadRequestError(
+        `Please login with your ${user.oauthProvider} account`
+      );
     }
 
     // Validate password
@@ -66,9 +83,9 @@ class AuthService {
     await sessionService.createSession(user, req, res);
 
     // Return user data (omit password)
-    const userObject = user.toObject();
+    const userObject = user.toObject ? user.toObject() : { ...user };
     delete userObject.password;
-    
+
     return userObject;
   }
 
@@ -77,4 +94,5 @@ class AuthService {
   }
 }
 
-module.exports = new AuthService();
+export const authService = new AuthService();
+export default authService;

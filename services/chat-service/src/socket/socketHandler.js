@@ -1,22 +1,28 @@
-const { Server } = require('socket.io');
-const cookie = require('cookie');
-const crypto = require('crypto');
-const { getSession, COOKIE_NAME } = require('@devtinder/shared');
-const chatRepository = require('../repositories/chatRepository');
+import { Server } from 'socket.io';
+import cookie from 'cookie';
+import crypto from 'crypto';
+import { getSession, COOKIE_NAME, logger } from '@devtinder/shared';
+import chatRepository from '../repositories/chatRepository.js';
 
-const setupSocket = (server) => {
+export const getRoomId = (userId, targetUserId) =>
+  crypto
+    .createHash('sha256')
+    .update([userId.toString(), targetUserId.toString()].sort().join('$'))
+    .digest('hex');
+
+export const setupSocket = (server) => {
   const io = new Server(server, {
     cors: {
       origin: process.env.FRONT_END_URL || 'http://localhost:5173',
       credentials: true,
-    }
+    },
   });
 
   io.on('connection', async (socket) => {
     try {
       const cookies = cookie.parse(socket.handshake.headers.cookie || '');
       const sid = cookies[COOKIE_NAME] || cookies.sid || cookies.token;
-      
+
       if (!sid) {
         socket.disconnect();
         return;
@@ -33,14 +39,17 @@ const setupSocket = (server) => {
       const firstName = session.firstName || 'User';
 
       socket.on('joinChat', ({ targetUserId }) => {
-        const roomId = crypto.createHash('sha256').update([userId, targetUserId].sort().join('$')).digest('hex');
+        const roomId = getRoomId(userId, targetUserId);
         socket.join(roomId);
       });
 
       socket.on('sendMessage', async ({ targetUserId, text }) => {
-        const roomId = crypto.createHash('sha256').update([userId, targetUserId].sort().join('$')).digest('hex');
-        
-        let chat = await chatRepository.findByParticipants(userId, targetUserId);
+        const roomId = getRoomId(userId, targetUserId);
+
+        let chat = await chatRepository.findByParticipants(
+          userId,
+          targetUserId
+        );
         if (!chat) {
           chat = await chatRepository.createChat(userId, targetUserId);
         }
@@ -51,9 +60,9 @@ const setupSocket = (server) => {
 
         io.to(roomId).emit('messageReceived', {
           senderId: userId,
-          firstName: firstName,
+          firstName,
           text,
-          createdAt: new Date()
+          createdAt: new Date(),
         });
       });
 
@@ -61,10 +70,12 @@ const setupSocket = (server) => {
         // cleanup
       });
     } catch (error) {
-      console.error('Socket error:', error);
+      logger.error('Socket error:', { error: error.message });
       socket.disconnect();
     }
   });
+
+  return io;
 };
 
-module.exports = setupSocket;
+export default setupSocket;

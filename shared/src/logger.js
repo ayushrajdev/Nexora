@@ -1,4 +1,4 @@
-const { createLogger, format, transports } = require('winston');
+import { createLogger, format, transports } from 'winston';
 
 const SERVICE_NAME = process.env.SERVICE_NAME || 'devtinder';
 const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
@@ -17,4 +17,5 @@ const logger = createLogger({
   transports: [new transports.Console()],
 });
 
-module.exports = logger;
+export default logger;
+export { logger };

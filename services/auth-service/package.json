@@ -2,10 +2,12 @@
   "name": "auth-service",
   "version": "1.0.0",
   "description": "Auth service for DevTinder",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev": "nodemon src/app.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@devtinder/shared": "file:../../shared",

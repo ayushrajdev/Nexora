@@ -1,0 +1,23 @@
+{
+  "name": "devtinder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DevTinder Microservices Monorepo",
+  "workspaces": [
+    "shared",
+    "api-gateway",
+    "services/*"
+  ],
+  "scripts": {
+    "test:shared": "node --test shared/test/shared.test.js",
+    "test:gateway": "node --test api-gateway/test/gateway.test.js",
+    "test:auth": "node --test services/auth-service/test/auth.test.js",
+    "test:profile": "node --test services/profile-service/test/profile.test.js",
+    "test:matching": "node --test services/matching-service/test/matching.test.js",
+    "test:chat": "node --test services/chat-service/test/chat.test.js",
+    "test:payment": "node --test services/payment-service/test/payment.test.js",
+    "test:notification": "node --test services/notification-service/test/notification.test.js",
+    "test": "node --test shared/test/shared.test.js api-gateway/test/gateway.test.js services/auth-service/test/auth.test.js services/profile-service/test/profile.test.js services/matching-service/test/matching.test.js services/chat-service/test/chat.test.js services/payment-service/test/payment.test.js services/notification-service/test/notification.test.js"
+  }
+}

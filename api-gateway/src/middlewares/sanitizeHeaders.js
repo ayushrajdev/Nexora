@@ -1,4 +1,4 @@
-const sanitizeHeaders = (req, res, next) => {
+export const sanitizeHeaders = (req, res, next) => {
   // Strip any incoming X-User-* headers to prevent spoofing
   for (const header in req.headers) {
     if (header.toLowerCase().startsWith('x-user-')) {
@@ -8,4 +8,4 @@ const sanitizeHeaders = (req, res, next) => {
   next();
 };
 
-module.exports = sanitizeHeaders;
+export default sanitizeHeaders;

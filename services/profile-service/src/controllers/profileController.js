@@ -1,7 +1,7 @@
-const profileService = require('../services/profileService');
-const { sendSuccess } = require('@devtinder/shared');
+import profileService from '../services/profileService.js';
+import { sendSuccess } from '@devtinder/shared';
 
-class ProfileController {
+export class ProfileController {
   async viewProfile(req, res, next) {
     try {
       const user = await profileService.getProfile(req.user._id);
@@ -13,7 +13,10 @@ class ProfileController {
 
   async editProfile(req, res, next) {
     try {
-      const updatedUser = await profileService.editProfile(req.user._id, req.body);
+      const updatedUser = await profileService.editProfile(
+        req.user._id,
+        req.body
+      );
       sendSuccess(res, updatedUser);
     } catch (err) {
       next(err);
@@ -23,7 +26,11 @@ class ProfileController {
   async changePassword(req, res, next) {
     try {
       const { oldPassword, newPassword } = req.body;
-      await profileService.changePassword(req.user._id, oldPassword, newPassword);
+      await profileService.changePassword(
+        req.user._id,
+        oldPassword,
+        newPassword
+      );
       sendSuccess(res, { message: 'Password updated successfully' });
     } catch (err) {
       next(err);
@@ -51,4 +58,5 @@ class ProfileController {
   }
 }
 
-module.exports = new ProfileController();
+export const profileController = new ProfileController();
+export default profileController;

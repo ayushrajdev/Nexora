@@ -1,12 +1,16 @@
-const requestRepo = require('../repositories/connectionRequestRepository');
-const profileClient = require('./profileClient');
-const publisher = require('../events/publisher');
-const { BadRequestError, NotFoundError } = require('@devtinder/shared');
+import requestRepo from '../repositories/connectionRequestRepository.js';
+import profileClient from './profileClient.js';
+import publisher from '../events/publisher.js';
+import { BadRequestError, NotFoundError } from '@devtinder/shared';
 
-class MatchingService {
+export class MatchingService {
   async sendRequest(fromUser, toUserId, status) {
     if (!['ignored', 'interested'].includes(status)) {
       throw new BadRequestError('Invalid status type');
+    }
+
+    if (fromUser._id.toString() === toUserId.toString()) {
+      throw new BadRequestError('Cannot send connection request to yourself!');
     }
 
     const toUser = await profileClient.getProfile(toUserId);
@@ -14,7 +18,10 @@ class MatchingService {
       throw new NotFoundError('User not found');
     }
 
-    const existingRequest = await requestRepo.findExistingRequest(fromUser._id, toUserId);
+    const existingRequest = await requestRepo.findExistingRequest(
+      fromUser._id,
+      toUserId
+    );
     if (existingRequest) {
       throw new BadRequestError('Connection request already exists');
     }
@@ -22,14 +29,14 @@ class MatchingService {
     const newRequest = await requestRepo.create({
       fromUserId: fromUser._id,
       toUserId,
-      status
+      status,
     });
 
     if (status === 'interested') {
       await publisher.publishConnectionInterested({
         fromUserId: fromUser._id,
         toUserId,
-        fromUserName: fromUser.firstName
+        fromUserName: fromUser.firstName,
       });
     }
 
@@ -41,7 +48,11 @@ class MatchingService {
       throw new BadRequestError('Invalid status type');
     }
 
-    const request = await requestRepo.findByIdAndToUserIdAndStatus(requestId, userId, 'interested');
+    const request = await requestRepo.findByIdAndToUserIdAndStatus(
+      requestId,
+      userId,
+      'interested'
+    );
     if (!request) {
       throw new NotFoundError('Connection request not found or invalid');
     }
@@ -52,7 +63,7 @@ class MatchingService {
     if (status === 'accepted') {
       await publisher.publishConnectionAccepted({
         fromUserId: request.fromUserId,
-        toUserId: request.toUserId
+        toUserId: request.toUserId,
       });
     }
 
@@ -60,45 +71,66 @@ class MatchingService {
   }
 
   async getReceivedRequests(userId) {
-    const requests = await requestRepo.findReceivedRequests(userId, 'interested');
-    
-    const requestsWithProfiles = await Promise.all(requests.map(async (req) => {
-      const profile = await profileClient.getProfile(req.fromUserId);
-      return { ...req.toObject(), fromUser: profile };
-    }));
-    
+    const requests = await requestRepo.findReceivedRequests(
+      userId,
+      'interested'
+    );
+
+    const requestsWithProfiles = await Promise.all(
+      requests.map(async (req) => {
+        const profile = await profileClient.getProfile(req.fromUserId);
+        const obj = req.toObject ? req.toObject() : { ...req };
+        return { ...obj, fromUser: profile };
+      })
+    );
+
     return requestsWithProfiles;
   }
 
   async getConnections(userId) {
     const requests = await requestRepo.findConnections(userId);
-    
-    const connections = await Promise.all(requests.map(async (req) => {
-      const otherUserId = req.fromUserId.toString() === userId.toString() ? req.toUserId : req.fromUserId;
-      const profile = await profileClient.getProfile(otherUserId);
-      return { ...req.toObject(), user: profile };
-    }));
-    
+
+    const connections = await Promise.all(
+      requests.map(async (req) => {
+        const otherUserId =
+          req.fromUserId.toString() === userId.toString()
+            ? req.toUserId
+            : req.fromUserId;
+        const profile = await profileClient.getProfile(otherUserId);
+        const obj = req.toObject ? req.toObject() : { ...req };
+        return { ...obj, user: profile };
+      })
+    );
+
     return connections;
   }
 
   async getFeed(userId, page, limit) {
     const allRequests = await requestRepo.findAllRequestsForUser(userId);
     const excludeIds = new Set();
-    
-    allRequests.forEach(req => {
+
+    allRequests.forEach((req) => {
       excludeIds.add(req.fromUserId.toString());
       excludeIds.add(req.toUserId.toString());
     });
-    
-    const users = await profileClient.getFeed(userId, Array.from(excludeIds), page, limit);
+
+    const users = await profileClient.getFeed(
+      userId,
+      Array.from(excludeIds),
+      page,
+      limit
+    );
     return users;
   }
 
   async verifyConnection(userId1, userId2) {
-    const connection = await requestRepo.findConnectionBetween(userId1, userId2);
+    const connection = await requestRepo.findConnectionBetween(
+      userId1,
+      userId2
+    );
     return { connected: !!connection };
   }
 }
 
-module.exports = new MatchingService();
+export const matchingService = new MatchingService();
+export default matchingService;

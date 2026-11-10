@@ -1,8 +1,9 @@
-const { SendEmailCommand } = require('@aws-sdk/client-ses');
-const sesClient = require('../config/ses');
-const templates = require('../templates/emailTemplates');
+import { SendEmailCommand } from '@aws-sdk/client-ses';
+import sesClient from '../config/ses.js';
+import templates from '../templates/emailTemplates.js';
+import { logger } from '@devtinder/shared';
 
-class EmailService {
+export class EmailService {
   async sendEmail(toAddress, subject, bodyHtml) {
     const params = {
       Source: process.env.SES_FROM_EMAIL || 'dummy@example.com',
@@ -17,13 +18,13 @@ class EmailService {
 
     try {
       if (process.env.NODE_ENV !== 'production') {
-        console.log(`Mock sending email to ${toAddress}: ${subject}`);
+        logger.info(`Mock sending email to ${toAddress}: ${subject}`);
         return;
       }
       const command = new SendEmailCommand(params);
       await sesClient.send(command);
     } catch (error) {
-      console.error('Error sending email:', error);
+      logger.error('Error sending email:', { error: error.message });
     }
   }
 
@@ -44,8 +45,16 @@ class EmailService {
   }
 
   async sendMatchEmail(email1, email2, name1, name2) {
-    await this.sendEmail(email1, 'You have a new match!', templates.matchTemplate(name2));
-    await this.sendEmail(email2, 'You have a new match!', templates.matchTemplate(name1));
+    await this.sendEmail(
+      email1,
+      'You have a new match!',
+      templates.matchTemplate(name2)
+    );
+    await this.sendEmail(
+      email2,
+      'You have a new match!',
+      templates.matchTemplate(name1)
+    );
   }
 
   async sendPaymentConfirmationEmail(email, membershipType) {
@@ -57,4 +66,5 @@ class EmailService {
   }
 }
 
-module.exports = new EmailService();
+export const emailService = new EmailService();
+export default emailService;

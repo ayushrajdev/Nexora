@@ -1,15 +1,15 @@
-const { getSession, refreshSession, COOKIE_NAME, UnauthorizedError } = require('@devtinder/shared');
+import { getSession, refreshSession, COOKIE_NAME, UnauthorizedError } from '@devtinder/shared';
 
-const sessionAuth = async (req, res, next) => {
+export const sessionAuth = async (req, res, next) => {
   try {
-    const sid = req.cookies[COOKIE_NAME] || req.cookies['sid'];
-    
+    const sid = req.cookies?.[COOKIE_NAME] || req.cookies?.['sid'];
+
     if (!sid) {
       throw new UnauthorizedError('Authentication required');
     }
 
     const session = await getSession(sid);
-    
+
     if (!session) {
       throw new UnauthorizedError('Session expired or invalid');
     }
@@ -30,4 +30,4 @@ const sessionAuth = async (req, res, next) => {
   }
 };
 
-module.exports = sessionAuth;
+export default sessionAuth;

@@ -1,11 +1,13 @@
 {
   "name": "payment-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Payment and membership service for DevTinder",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "node src/app.js"
+    "dev": "node src/app.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@devtinder/shared": "file:../../shared",

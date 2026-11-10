@@ -2,10 +2,12 @@
   "name": "api-gateway",
   "version": "1.0.0",
   "description": "API Gateway for DevTinder",
+  "type": "module",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "dev": "node src/app.js"
+    "dev": "node src/app.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@devtinder/shared": "file:../shared",

@@ -1,10 +1,30 @@
-const razorpayInstance = require('../config/razorpay');
-const paymentRepository = require('../repositories/paymentRepository');
-const profileClient = require('./profileClient');
-const { publishEvent, EVENTS, QUEUES, MEMBERSHIP_AMOUNT, BadRequestError } = require('@devtinder/shared');
-const crypto = require('crypto');
+import crypto from 'crypto';
+import razorpayInstance from '../config/razorpay.js';
+import paymentRepository from '../repositories/paymentRepository.js';
+import profileClient from './profileClient.js';
+import {
+  createPublisher,
+  publishEvent,
+  EVENTS,
+  QUEUES,
+  MEMBERSHIP_AMOUNT,
+  BadRequestError,
+} from '@devtinder/shared';
 
-class PaymentService {
+let paymentPublisher = null;
+
+const getPaymentPublisher = () => {
+  if (!paymentPublisher) {
+    paymentPublisher = createPublisher(QUEUES.PAYMENT_EVENTS);
+  }
+  return paymentPublisher;
+};
+
+export const setPaymentPublisher = (customPublisher) => {
+  paymentPublisher = customPublisher;
+};
+
+export class PaymentService {
   async createOrder(userId, membershipType, userDetails) {
     const amount = MEMBERSHIP_AMOUNT[membershipType];
     if (!amount) {
@@ -12,7 +32,7 @@ class PaymentService {
     }
 
     const receipt = `receipt_${Date.now()}`;
-    
+
     const options = {
       amount: amount * 100, // paise
       currency: 'INR',
@@ -20,8 +40,8 @@ class PaymentService {
       notes: {
         firstName: userDetails.firstName || '',
         lastName: userDetails.lastName || '',
-        membershipType
-      }
+        membershipType,
+      },
     };
 
     const order = await razorpayInstance.orders.create(options);
@@ -33,15 +53,17 @@ class PaymentService {
       amount,
       currency: 'INR',
       receipt,
-      notes: options.notes
+      notes: options.notes,
     });
 
     return { order, keyId: process.env.RAZORPAY_KEY_ID };
   }
 
   async handleWebhook(body, signature) {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET || 'dummy_webhook_secret';
-    const expectedSignature = crypto.createHmac('sha256', secret)
+    const secret =
+      process.env.RAZORPAY_WEBHOOK_SECRET || 'dummy_webhook_secret';
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
       .update(JSON.stringify(body))
       .digest('hex');
 
@@ -54,12 +76,16 @@ class PaymentService {
       const orderId = paymentEntity.order_id;
       const paymentId = paymentEntity.id;
 
-      const payment = await paymentRepository.updatePayment(paymentId, orderId, 'captured');
-      
+      const payment = await paymentRepository.updatePayment(
+        paymentId,
+        orderId,
+        'captured'
+      );
+
       if (payment) {
-        await publishEvent(QUEUES.PAYMENT_EVENTS, EVENTS.PAYMENT_CAPTURED, {
+        await publishEvent(getPaymentPublisher(), EVENTS.PAYMENT_CAPTURED, {
           userId: payment.userId,
-          membershipType: payment.notes.membershipType
+          membershipType: payment.notes.membershipType,
         });
       }
     }
@@ -67,12 +93,13 @@ class PaymentService {
 
   async verifyPremiumStatus(userId) {
     const profileResponse = await profileClient.getUserProfile(userId);
-    const user = profileResponse.data;
+    const user = profileResponse.data || profileResponse;
     return {
       isPremium: user.isPremium || false,
-      membershipType: user.membershipType || null
+      membershipType: user.membershipType || null,
     };
   }
 }
 
-module.exports = new PaymentService();
+export const paymentService = new PaymentService();
+export default paymentService;

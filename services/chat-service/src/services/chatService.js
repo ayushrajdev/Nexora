@@ -1,10 +1,13 @@
-const chatRepository = require('../repositories/chatRepository');
-const matchingClient = require('./matchingClient');
-const { ForbiddenError } = require('@devtinder/shared');
+import chatRepository from '../repositories/chatRepository.js';
+import matchingClient from './matchingClient.js';
+import { ForbiddenError } from '@devtinder/shared';
 
-class ChatService {
+export class ChatService {
   async getChat(userId, targetUserId) {
-    const isConnected = await matchingClient.verifyConnection(userId, targetUserId);
+    const isConnected = await matchingClient.verifyConnection(
+      userId,
+      targetUserId
+    );
     if (!isConnected) {
       throw new ForbiddenError('You are not connected to this user.');
     }
@@ -18,4 +21,5 @@ class ChatService {
   }
 }
 
-module.exports = new ChatService();
+export const chatService = new ChatService();
+export default chatService;

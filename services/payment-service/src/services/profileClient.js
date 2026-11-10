@@ -1,14 +1,19 @@
-const { createServiceClient } = require('@devtinder/shared');
+import { createServiceClient } from '@devtinder/shared';
 
-const profileClient = createServiceClient(process.env.PROFILE_SERVICE_URL || 'http://localhost:3002');
+export class ProfileClient {
+  constructor() {
+    this.client = createServiceClient(
+      process.env.PROFILE_SERVICE_URL || 'http://localhost:3002'
+    );
+  }
 
-class ProfileClient {
   async getUserProfile(userId) {
-    const response = await profileClient.get('/profile/view', {
-      headers: { 'x-user-id': userId.toString() }
+    const response = await this.client.get('/profile/view', {
+      headers: { 'x-user-id': userId.toString() },
     });
     return response.data;
   }
 }
 
-module.exports = new ProfileClient();
+export const profileClient = new ProfileClient();
+export default profileClient;

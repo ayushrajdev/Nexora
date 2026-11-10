@@ -1,6 +1,6 @@
-const Session = require('../models/session');
+import Session from '../models/session.js';
 
-class SessionRepository {
+export class SessionRepository {
   async create(sessionData) {
     const session = new Session(sessionData);
     return await session.save();
@@ -15,4 +15,5 @@ class SessionRepository {
   }
 }
 
-module.exports = new SessionRepository();
+export const sessionRepository = new SessionRepository();
+export default sessionRepository;

@@ -1,11 +1,12 @@
-require('dotenv').config();
-const express = require('express');
-const cookieParser = require('cookie-parser');
-const { errorHandler } = require('@devtinder/shared');
-const connectDB = require('./config/database');
-const profileRoutes = require('./routes/profileRoutes');
+import 'dotenv/config';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
+import { errorHandler, logger } from '@devtinder/shared';
+import connectDB from './config/database.js';
+import profileRoutes from './routes/profileRoutes.js';
 
-const app = express();
+export const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
@@ -16,20 +17,18 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3002;
 
-const startServer = async () => {
+export const startServer = async () => {
   try {
     await connectDB();
     app.listen(PORT, () => {
-      console.log(`Profile Service listening on port ${PORT}`);
+      logger.info(`Profile Service listening on port ${PORT}`);
     });
   } catch (err) {
-    console.error('Failed to start server:', err);
+    logger.error('Failed to start server:', { error: err.message });
     process.exit(1);
   }
 };
 
-if (require.main === module) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   startServer();
 }
-
-module.exports = { app, startServer };

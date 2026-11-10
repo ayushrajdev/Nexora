@@ -1,7 +1,7 @@
-const matchingService = require('../services/matchingService');
-const { sendSuccess } = require('@devtinder/shared');
+import matchingService from '../services/matchingService.js';
+import { sendSuccess } from '@devtinder/shared';
 
-class UserController {
+export class UserController {
   async getReceivedRequests(req, res, next) {
     try {
       const requests = await matchingService.getReceivedRequests(req.user._id);
@@ -42,4 +42,5 @@ class UserController {
   }
 }
 
-module.exports = new UserController();
+export const userController = new UserController();
+export default userController;

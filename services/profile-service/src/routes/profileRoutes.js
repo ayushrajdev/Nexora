@@ -1,15 +1,25 @@
-const express = require('express');
-const profileController = require('../controllers/profileController');
-const { internalAuth } = require('@devtinder/shared');
-const verifyInternalService = require('../middlewares/internalService');
+import express from 'express';
+import profileController from '../controllers/profileController.js';
+import { internalAuth } from '@devtinder/shared';
+import verifyInternalService from '../middlewares/internalService.js';
 
 const router = express.Router();
 
-router.get('/profile/view', internalAuth, profileController.viewProfile.bind(profileController));
-router.patch('/profile/edit', internalAuth, profileController.editProfile.bind(profileController));
-router.patch('/profile/password', internalAuth, profileController.changePassword.bind(profileController));
+router.get('/profile/view', internalAuth, (req, res, next) =>
+  profileController.viewProfile(req, res, next)
+);
+router.patch('/profile/edit', internalAuth, (req, res, next) =>
+  profileController.editProfile(req, res, next)
+);
+router.patch('/profile/password', internalAuth, (req, res, next) =>
+  profileController.changePassword(req, res, next)
+);
 
-router.get('/profile/feed', verifyInternalService, profileController.getFeed.bind(profileController));
-router.get('/profile/:userId', verifyInternalService, profileController.getInternalProfile.bind(profileController));
+router.get('/profile/feed', verifyInternalService, (req, res, next) =>
+  profileController.getFeed(req, res, next)
+);
+router.get('/profile/:userId', verifyInternalService, (req, res, next) =>
+  profileController.getInternalProfile(req, res, next)
+);
 
-module.exports = router;
+export default router;

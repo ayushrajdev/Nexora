@@ -1,9 +1,11 @@
-const express = require('express');
-const chatController = require('../controllers/chatController');
-const { internalAuth } = require('@devtinder/shared');
+import express from 'express';
+import chatController from '../controllers/chatController.js';
+import { internalAuth } from '@devtinder/shared';
 
 const router = express.Router();
 
-router.get('/:targetUserId', internalAuth, chatController.getChat);
+router.get('/:targetUserId', internalAuth, (req, res, next) =>
+  chatController.getChat(req, res, next)
+);
 
-module.exports = router;
+export default router;
